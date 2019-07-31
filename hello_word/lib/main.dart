@@ -1,108 +1,62 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(new MyApp());
+void main() {
+  runApp(MaterialApp(
+    title: 'My App',
+    home: MyScaffold(),
+  ));
+}
 
-class MyApp extends StatelessWidget {
+class MyAppBar extends StatelessWidget {
+  // Widget子类中的字段往往都会定义为"final"
+  final Widget title;
+
+  MyAppBar(this.title);
+
   @override
   Widget build(BuildContext context) {
-    
-    Widget titleSection = new Container(
-      padding: const EdgeInsets.all(32.0),
-      child: new Row(
-        children: [
-          new Expanded(
-            child: new Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                new Container(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: new Text(
-                    'Oeschinen Lake Campground',
-                    style: new TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                new Text(
-                  'Kandersteg, Switzerland',
-                  style: new TextStyle(
-                    color: Colors.grey[500],
-                  ),
-                ),
-              ],
-            ),
+    return Container(
+      height: 84.0,
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      decoration: BoxDecoration(color: Colors.blue[500]),
+      child: Row(
+        children: <Widget>[
+          IconButton(
+            icon: Icon(Icons.menu),
+            tooltip: 'navigation menu',
+            onPressed: null,
           ),
-          new Icon(
-            Icons.star,
-            color: Colors.red[500],
+          Expanded(
+            child: title,
           ),
-          new Text('41'),
+          IconButton(
+            icon: Icon(Icons.search),
+            tooltip: 'Search',
+            onPressed: null,
+          )
         ],
       ),
     );
-    //...
-    Widget textSection = new Container(
-      padding: const EdgeInsets.all(32.0),
-      child: new Text(
-        '''
-        Lake Oeschinen lies at the foot of the Blüemlisalp in the Bernese Alps. Situated 1,578 meters above sea level, it is one of the larger Alpine Lakes. A gondola ride from Kandersteg, followed by a half-hour walk through pastures and pine forest, leads you to the lake, which warms to 20 degrees Celsius in the summer. Activities enjoyed here include rowing, and riding the summer toboggan run.
-        ''',
-        softWrap: true,
-      ),
-    );
+  }
+}
 
-    Column buildButtonColumn(IconData icon, String label) {
-      Color color = Theme.of(context).primaryColor;
-      return new Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
+class MyScaffold extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Material 是UI呈现的“一张纸”
+    return Material(
+      child: Column(
         children: <Widget>[
-          new Icon(icon, color: color),
-          new Container(
-            margin: const EdgeInsets.only(top: 8.0),
-            child: new Text(
-              label,
-              style: new TextStyle(
-                fontSize: 12.0,
-                fontWeight: FontWeight.w400,
-                color: color,
-              ),
+          MyAppBar(Text(
+            'Example title',
+            style: Theme.of(context).primaryTextTheme.title,
+          )),
+          Expanded(
+            child: Center(
+              child: Text('Hello, world!'),
             ),
           )
         ],
-      );
-    }
-
-    Widget buttonSection = new Container(
-      child: new Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[
-          buildButtonColumn(Icons.call, "Call"),
-          buildButtonColumn(Icons.near_me, "ROUTER"),
-          buildButtonColumn(Icons.share, "SHARE"),
-        ],
-      ),
-    );
-    return new MaterialApp(
-      title: "Fulutter Demo",
-      theme: new ThemeData(primarySwatch: Colors.blue),
-      home: new Scaffold(
-        appBar: new AppBar(
-          title: new Text('sdsds'),
-        ),
-        body: new ListView(
-          children: [
-            Image.asset(
-              'images/lake.jpg',
-              width: 600.0,
-              height: 240.0,
-              fit: BoxFit.cover,
-            ),
-            titleSection,
-            buttonSection,
-            textSection,
-          ],
-        ),
       ),
     );
   }
