@@ -1,194 +1,142 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-class AnimatedListSample extends StatefulWidget {
-  @override
-  _AnimatedListSampleState createState() => new _AnimatedListSampleState();
+void main() {
+  runApp(new AppBarBottomSample());
 }
 
-class _AnimatedListSampleState extends State<AnimatedListSample> {
-  final GlobalKey<AnimatedListState> _listKey =
-      new GlobalKey<AnimatedListState>();
-  ListModel<int> _list;
-  int _selectedItem;
-  int _nextItem; // The next item inserted when the user presses the '+' button.
+class AppBarBottomSample extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    // TODO: implement createState
+
+    return _AppBarBottomSampleState();
+  }
+}
+
+class _AppBarBottomSampleState extends State<AppBarBottomSample>
+    with SingleTickerProviderStateMixin {
+  TabController _tabController;
 
   @override
   void initState() {
+    // TODO: implement initState
     super.initState();
-    _list = new ListModel<int>(
-      listKey: _listKey,
-      initialItems: <int>[0, 1, 2],
-      removedItemBuilder: _buildRemovedItem,
-    );
-    _nextItem = 3;
+    _tabController = TabController(vsync: this, length: choices.length);
   }
 
-  // Used to build list items that haven't been removed.
-  Widget _buildItem(
-      BuildContext context, int index, Animation<double> animation) {
-    return new CardItem(
-      animation: animation,
-      item: _list[index],
-      selected: _selectedItem == _list[index],
-      onTap: () {
-        setState(() {
-          _selectedItem = _selectedItem == _list[index] ? null : _list[index];
-        });
-      },
-    );
-  }
-
-  // Used to build an item after it has been removed from the list. This method is
-  // needed because a removed item remains  visible until its animation has
-  // completed (even though it's gone as far this ListModel is concerned).
-  // The widget will be used by the [AnimatedListState.removeItem] method's
-  // [AnimatedListRemovedItemBuilder] parameter.
-  Widget _buildRemovedItem(
-      int item, BuildContext context, Animation<double> animation) {
-    return new CardItem(
-      animation: animation,
-      item: item,
-      selected: false,
-      // No gesture detector here: we don't want removed items to be interactive.
-    );
-  }
-
-  // Insert the "next item" into the list model.
-  void _insert() {
-    final int index =
-        _selectedItem == null ? _list.length : _list.indexOf(_selectedItem);
-    _list.insert(index, _nextItem++);
-  }
-
-  // Remove the selected item from the list model.
-  void _remove() {
-    if (_selectedItem != null) {
-      _list.removeAt(_list.indexOf(_selectedItem));
-      setState(() {
-        _selectedItem = null;
-      });
-    }
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
-      home: new Scaffold(
-        appBar: new AppBar(
-          title: const Text('AnimatedList'),
-          actions: <Widget>[
-            new IconButton(
-              icon: const Icon(Icons.add_circle),
-              onPressed: _insert,
-              tooltip: 'insert a new item',
-            ),
-            new IconButton(
-              icon: const Icon(Icons.remove_circle),
-              onPressed: _remove,
-              tooltip: 'remove the selected item',
-            ),
-          ],
-        ),
-        body: new Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: new AnimatedList(
-            key: _listKey,
-            initialItemCount: _list.length,
-            itemBuilder: _buildItem,
+    // TODO: implement build
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('05-导航底部挂Tabbar'),
+          leading: IconButton(
+            tooltip: 'Previous choice',
+            icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              _nextPage(-1);
+            },
           ),
-        ),
-      ),
-    );
-  }
-}
-
-
-class ListModel<E> {
-  ListModel({
-    @required this.listKey,
-    @required this.removedItemBuilder,
-    Iterable<E> initialItems,
-  })  : assert(listKey != null),
-        assert(removedItemBuilder != null),
-        _items = new List<E>.from(initialItems ?? <E>[]);
-
-  final GlobalKey<AnimatedListState> listKey;
-  final dynamic removedItemBuilder;
-  final List<E> _items;
-
-  AnimatedListState get _animatedList => listKey.currentState;
-
-  void insert(int index, E item) {
-    _items.insert(index, item);
-    _animatedList.insertItem(index);
-  }
-
-  E removeAt(int index) {
-    final E removedItem = _items.removeAt(index);
-    if (removedItem != null) {
-      _animatedList.removeItem(index,
-          (BuildContext context, Animation<double> animation) {
-        return removedItemBuilder(removedItem, context, animation);
-      });
-    }
-    return removedItem;
-  }
-
-  int get length => _items.length;
-  E operator [](int index) => _items[index];
-  int indexOf(E item) => _items.indexOf(item);
-}
-
-/// Displays its integer item as 'item N' on a Card whose color is based on
-/// the item's value. The text is displayed in bright green if selected is true.
-/// This widget's height is based on the animation parameter, it varies
-/// from 0 to 128 as the animation varies from 0.0 to 1.0.
-class CardItem extends StatelessWidget {
-  const CardItem(
-      {Key key,
-      @required this.animation,
-      this.onTap,
-      @required this.item,
-      this.selected: false})
-      : assert(animation != null),
-        assert(item != null && item >= 0),
-        assert(selected != null),
-        super(key: key);
-
-  final Animation<double> animation;
-  final VoidCallback onTap;
-  final int item;
-  final bool selected;
-
-  @override
-  Widget build(BuildContext context) {
-    TextStyle textStyle = Theme.of(context).textTheme.display1;
-    if (selected)
-      textStyle = textStyle.copyWith(color: Colors.lightGreenAccent[400]);
-    return new Padding(
-      padding: const EdgeInsets.all(2.0),
-      child: new SizeTransition(
-        axis: Axis.vertical,
-        sizeFactor: animation,
-        child: new GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: onTap,
-          child: new SizedBox(
-            height: 128.0,
-            child: new Card(
-              color: Colors.primaries[item % Colors.primaries.length],
-              child: new Center(
-                child: new Text('Item $item', style: textStyle),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.arrow_forward),
+              tooltip: '下一个 choice',
+              onPressed: () {
+                _nextPage(1);
+              },
+            )
+          ],
+          bottom: PreferredSize(
+            preferredSize: Size.fromHeight(48.0),
+            child: Theme(
+              data: Theme.of(context).copyWith(accentColor: Colors.white),
+              child: Container(
+                height: 48.0,
+                alignment: Alignment.center,
+                child: TabPageSelector(controller: _tabController,),
               ),
             ),
           ),
         ),
+        body: TabBarView(
+          controller: _tabController,
+          children: choices.map(
+              (Choice choice){
+                return Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: ChoiceCard(
+                      choice: choice,
+                    ),
+                );
+              }
+          ).toList(),
+        ),
       ),
     );
   }
+
+
+  void _nextPage(int delta) {
+    int indexNew = _tabController.index + delta;
+    if (indexNew >= _tabController.length) {
+      indexNew = 0;
+      // return;
+    }else if (indexNew < 0){
+      indexNew = _tabController.length - 1;
+    }
+
+    _tabController.animateTo(indexNew);
+  }
 }
 
-void main() {
-  runApp(AnimatedListSample());
+class Choice {
+  final String title;
+  final IconData icon;
+
+  const Choice(this.title, this.icon);
+}
+
+const List<Choice> choices = const <Choice>[
+  const Choice('CAR', Icons.directions_car),
+  const Choice('bike', Icons.directions_bike),
+  const Choice('boat', Icons.directions_boat),
+  const Choice('bus', Icons.directions_bus),
+  const Choice('railway', Icons.directions_railway),
+  const Choice('walk', Icons.directions_walk),
+  const Choice('subway', Icons.directions_subway),
+];
+
+
+
+class ChoiceCard extends StatelessWidget {
+
+  const ChoiceCard({ Key key, this.choice }) : super(key: key);
+  final Choice choice;
+
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    final TextStyle textStyle = Theme.of(context).textTheme.display1;
+    return new Card(
+      color: Colors.white,
+      child: new Center(
+        child: new Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            new Icon(choice.icon, size: 128.0, color: textStyle.color),
+            new Text(choice.title, style: textStyle),
+          ],
+        ),
+      ),
+    );
+  }
 }
