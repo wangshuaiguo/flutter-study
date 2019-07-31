@@ -1,142 +1,90 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(new AppBarBottomSample());
+  runApp(new ExpansionTileSample());
 }
 
-class AppBarBottomSample extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() {
-    // TODO: implement createState
-
-    return _AppBarBottomSampleState();
-  }
-}
-
-class _AppBarBottomSampleState extends State<AppBarBottomSample>
-    with SingleTickerProviderStateMixin {
-  TabController _tabController;
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    _tabController = TabController(vsync: this, length: choices.length);
-  }
-
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    _tabController.dispose();
-    super.dispose();
-  }
-
+class ExpansionTileSample extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('05-导航底部挂Tabbar'),
-          leading: IconButton(
-            tooltip: 'Previous choice',
-            icon: Icon(Icons.arrow_back),
-            onPressed: () {
-              _nextPage(-1);
-            },
-          ),
-          actions: <Widget>[
-            IconButton(
-              icon: Icon(Icons.arrow_forward),
-              tooltip: '下一个 choice',
-              onPressed: () {
-                _nextPage(1);
-              },
-            )
-          ],
-          bottom: PreferredSize(
-            preferredSize: Size.fromHeight(48.0),
-            child: Theme(
-              data: Theme.of(context).copyWith(accentColor: Colors.white),
-              child: Container(
-                height: 48.0,
-                alignment: Alignment.center,
-                child: TabPageSelector(controller: _tabController,),
-              ),
-            ),
-          ),
+    return new MaterialApp(
+      home: new Scaffold(
+        appBar: new AppBar(
+          title: const Text('ExpansionTile'),
         ),
-        body: TabBarView(
-          controller: _tabController,
-          children: choices.map(
-              (Choice choice){
-                return Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: ChoiceCard(
-                      choice: choice,
-                    ),
-                );
-              }
-          ).toList(),
+        body: new ListView.builder(
+          itemBuilder: (BuildContext context, int index) =>
+              new EntryItem(data[index]),
+          itemCount: data.length,
         ),
       ),
     );
   }
-
-
-  void _nextPage(int delta) {
-    int indexNew = _tabController.index + delta;
-    if (indexNew >= _tabController.length) {
-      indexNew = 0;
-      // return;
-    }else if (indexNew < 0){
-      indexNew = _tabController.length - 1;
-    }
-
-    _tabController.animateTo(indexNew);
-  }
 }
 
-class Choice {
+class Entry {
+  Entry(this.title, [this.children = const <Entry>[]]);
   final String title;
-  final IconData icon;
-
-  const Choice(this.title, this.icon);
+  final List<Entry> children;
 }
 
-const List<Choice> choices = const <Choice>[
-  const Choice('CAR', Icons.directions_car),
-  const Choice('bike', Icons.directions_bike),
-  const Choice('boat', Icons.directions_boat),
-  const Choice('bus', Icons.directions_bus),
-  const Choice('railway', Icons.directions_railway),
-  const Choice('walk', Icons.directions_walk),
-  const Choice('subway', Icons.directions_subway),
+final List<Entry> data = <Entry>[
+  new Entry(
+    'Chapter A',
+    <Entry>[
+      new Entry(
+        'Section A0',
+        <Entry>[
+          new Entry('Item A0.1'),
+          new Entry('Item A0.2'),
+          new Entry('Item A0.3'),
+        ],
+      ),
+      new Entry('Section A1'),
+      new Entry('Section A2'),
+    ],
+  ),
+  new Entry(
+    'Chapter B',
+    <Entry>[
+      new Entry('Section B0'),
+      new Entry('Section B1'),
+    ],
+  ),
+  new Entry(
+    'Chapter C',
+    <Entry>[
+      new Entry('Section C0'),
+      new Entry('Section C1'),
+      new Entry(
+        'Section C2',
+        <Entry>[
+          new Entry('Item C2.0'),
+          new Entry('Item C2.1'),
+          new Entry('Item C2.2'),
+          new Entry('Item C2.3'),
+        ],
+      ),
+    ],
+  ),
 ];
 
+class EntryItem extends StatelessWidget {
+  const EntryItem(this.entry);
 
+  final Entry entry;
 
-class ChoiceCard extends StatelessWidget {
-
-  const ChoiceCard({ Key key, this.choice }) : super(key: key);
-  final Choice choice;
+  Widget _buildTiles(Entry root) {
+    if (root.children.isEmpty) return new ListTile(title: new Text(root.title));
+    return new ExpansionTile(
+      key: new PageStorageKey<Entry>(root),
+      title: new Text(root.title),
+      children: root.children.map(_buildTiles).toList(),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
-    final TextStyle textStyle = Theme.of(context).textTheme.display1;
-    return new Card(
-      color: Colors.white,
-      child: new Center(
-        child: new Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            new Icon(choice.icon, size: 128.0, color: textStyle.color),
-            new Text(choice.title, style: textStyle),
-          ],
-        ),
-      ),
-    );
+    return _buildTiles(entry);
   }
 }
